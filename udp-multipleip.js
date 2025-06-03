@@ -11,13 +11,15 @@ const PORT = 4001;
 const channels = [
     {
         id: "ESPN",
-        multicastAddress: "239.100.100.45",
-        port: 5001,
-        ipaddress: "172.32.215.34",
-        senderIp : null,
-        clientStream: new  PassThrough(),
-        isBuffering : true,
-        bufferDelay : 10 //in sec
+        multicastAddress: "239.100.100.45", // channel multicast ip address
+        port: 5001, // udp port of channel
+        ipaddress: "172.32.215.34", // local ip in which stream is access from tv 
+        senderIp : null, // store the sender local ip from udp socket
+        clientStream: new  PassThrough(), // store the client stream
+        isBuffering : true,  // boolean to store is streaming
+        bufferDelay : 10, //in sec
+        pcaketBuffer : [], //used to store the incoming the onesecondpacketbuffer array
+        oneSecondPacketBuffer : [], // is
     },
     {
         id: "CNN",
