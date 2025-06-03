@@ -16,8 +16,6 @@ const channels = [
         ipaddress: "172.32.215.34",
         senderIp : null,
         clientStream: new  PassThrough(),
-        isBuffering : true,
-        bufferDelay : 10 //in sec
     },
     {
         id: "CNN",
@@ -25,9 +23,7 @@ const channels = [
         port: 5001,
         ipaddress: "172.32.215.35",
         senderIp : null,
-        clientStream : new PassThrough(),
-        isBuffering : true,
-        bufferDelay : 10 //in sec
+        clientStream : new PassThrough()
     },
 ]
 
