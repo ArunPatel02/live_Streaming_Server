@@ -1,0 +1,92 @@
+[
+    {
+        "id": "6784a66cc2b224fb1ab3c6bc",
+        "name": "WEATHER NATION",
+        "multicastAddress": "239.100.100.10",
+        "port": 5001,
+        "ipaddress": "10.85.0.11",
+        "senderIp": null,
+        "bufferDelay": 10 
+    },
+    {
+        "id": "6784a66cc2b224fb1ab3c6bd",
+        "name": "CNN",
+        "multicastAddress": "239.100.100.11",
+        "port": 5001,
+        "ipaddress": "10.85.0.11",
+        "senderIp": null,
+        "bufferDelay": 10 
+    },
+    {
+        "id": "6784a66cc2b224fb1ab3c6be",
+        "name": "MSNBC",
+        "multicastAddress": "239.100.100.12",
+        "port": 5001,
+        "ipaddress": "10.85.0.11",
+        "senderIp": null,
+        "bufferDelay": 10 
+    },
+    {
+        "id": "6784a66cc2b224fb1ab3c6bf",
+        "name": "HLN",
+        "multicastAddress": "239.100.100.13",
+        "port": 5001,
+        "ipaddress": "10.85.0.11",
+        "senderIp": null,
+        "bufferDelay": 10 
+    },
+    {
+        "id": "6784a66cc2b224fb1ab3c6c0",
+        "name": "BLOOMBERG",
+        "multicastAddress": "239.100.100.14",
+        "port": 5001,
+        "ipaddress": "10.85.0.11",
+        "senderIp": null,
+        "bufferDelay": 10 
+    },
+    {
+        "id": "6784a66cc2b224fb1ab3c6c1",
+        "name": "FOX NEWS",
+        "multicastAddress": "239.100.100.15",
+        "port": 5001,
+        "ipaddress": "10.85.0.11",
+        "senderIp": null,
+        "bufferDelay": 10 
+    },
+    {
+        "id": "6784a66cc2b224fb1ab3c6c2",
+        "name": "FX",
+        "multicastAddress": "239.100.100.16",
+        "port": 5001,
+        "ipaddress": "10.85.0.11",
+        "senderIp": null,
+        "bufferDelay": 10 
+    },
+    {
+        "id": "6784a66cc2b224fb1ab3c6c3",
+        "name": "FXX",
+        "multicastAddress": "239.100.100.17",
+        "port": 5001,
+        "ipaddress": "10.85.0.11",
+        "senderIp": null,
+        "bufferDelay": 10 
+    },
+    {
+        "id": "6784a66cc2b224fb1ab3c6c4",
+        "name": "NAT GEO",
+        "multicastAddress": "239.100.100.18",
+        "port": 5001,
+        "ipaddress": "10.85.0.11",
+        "senderIp": null,
+        "bufferDelay": 10 
+    },
+    {
+        "id": "6784a66cc2b224fb1ab3c6c5",
+        "name": "TBS",
+        "multicastAddress": "239.100.100.19",
+        "port": 5001,
+        "ipaddress": "10.85.0.11",
+        "senderIp": null,
+        "bufferDelay": 10 
+    }
+]

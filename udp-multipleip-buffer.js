@@ -10,21 +10,95 @@ const PORT = 4001;
 
 const channels = [
     {
-        id: "ESPN",
-        multicastAddress: "239.100.100.45", // channel multicast ip address
-        port: 5001, // udp port of channel
-        ipaddress: "172.32.215.34", // local ip in which stream is access from tv 
-        senderIp: null, // store the sender local ip from udp socket
-        bufferDelay: 10, //in sec
+        "id": "6784a66cc2b224fb1ab3c6bc",
+        "name": "WEATHER NATION",
+        "multicastAddress": "239.100.100.10",
+        "port": 5001,
+        "ipaddress": "10.85.0.10",
+        "senderIp": null,
+        "bufferDelay": 10 
     },
     {
-        id: "CNN",
-        multicastAddress: "239.100.100.11",
-        port: 5001,
-        ipaddress: "172.32.215.35",
-        senderIp: null,
-        bufferDelay: 10 //in sec
+        "id": "6784a66cc2b224fb1ab3c6bd",
+        "name": "CNN",
+        "multicastAddress": "239.100.100.11",
+        "port": 5001,
+        "ipaddress": "10.85.0.11",
+        "senderIp": null,
+        "bufferDelay": 10 
     },
+    {
+        "id": "6784a66cc2b224fb1ab3c6be",
+        "name": "MSNBC",
+        "multicastAddress": "239.100.100.12",
+        "port": 5001,
+        "ipaddress": "10.85.0.12",
+        "senderIp": null,
+        "bufferDelay": 10 
+    },
+    {
+        "id": "6784a66cc2b224fb1ab3c6bf",
+        "name": "HLN",
+        "multicastAddress": "239.100.100.13",
+        "port": 5001,
+        "ipaddress": "10.85.0.13",
+        "senderIp": null,
+        "bufferDelay": 10 
+    },
+    {
+        "id": "6784a66cc2b224fb1ab3c6c0",
+        "name": "BLOOMBERG",
+        "multicastAddress": "239.100.100.14",
+        "port": 5001,
+        "ipaddress": "10.85.0.14",
+        "senderIp": null,
+        "bufferDelay": 10 
+    },
+    {
+        "id": "6784a66cc2b224fb1ab3c6c1",
+        "name": "FOX NEWS",
+        "multicastAddress": "239.100.100.15",
+        "port": 5001,
+        "ipaddress": "10.85.0.15",
+        "senderIp": null,
+        "bufferDelay": 10 
+    },
+    {
+        "id": "6784a66cc2b224fb1ab3c6c2",
+        "name": "FX",
+        "multicastAddress": "239.100.100.16",
+        "port": 5001,
+        "ipaddress": "10.85.0.16",
+        "senderIp": null,
+        "bufferDelay": 10 
+    },
+    {
+        "id": "6784a66cc2b224fb1ab3c6c3",
+        "name": "FXX",
+        "multicastAddress": "239.100.100.17",
+        "port": 5001,
+        "ipaddress": "10.85.0.17",
+        "senderIp": null,
+        "bufferDelay": 10 
+    },
+    // {
+    //     "id": "6784a66cc2b224fb1ab3c6c4",
+    //     "name": "NAT GEO",
+    //     "multicastAddress": "239.100.100.18",
+    //     "port": 5001,
+    //     "ipaddress": "10.85.0.18",
+    //     "senderIp": null,
+    //     "bufferDelay": 10 
+    // },
+    {
+        "id": "6784a66cc2b224fb1ab3c6c5",
+        "name": "TBS",
+        "multicastAddress": "239.100.100.19",
+        "port": 5001,
+        "ipaddress": "10.85.0.19",
+        "senderIp": null,
+        "bufferDelay": 10 
+    }
 ]
 
 /**
