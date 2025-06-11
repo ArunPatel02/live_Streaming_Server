@@ -56,7 +56,7 @@ const captureSenderIp = (line) => {
 // Path to tcpdump
 const tcpdumpPath = '/usr/bin/tcpdump'; // confirm with `which tcpdump`
 
-const udpSocket = dgram.createSocket({ 'type': 'udp4', reuseAddr: true, reusePort: true })
+const udpSocket = dgram.createSocket({ 'type': 'udp4', reuseAddr: true })
 
 udpSocket.bind(5001, () => {
     channels.forEach(channel => {
@@ -67,7 +67,7 @@ udpSocket.bind(5001, () => {
 
 udpSocket.on('message', (msg, rinfo) => {
     if (senderIpCleintStreamMap[rinfo.address]) {
-        const currentChannel = senderIpCleintStreamMap[rinfo.address]
+        const currentChannel = senderIpCleintStreamMap[`${rinfo.address}.${rinfo.port}`]
         if (!currentChannel.startTime) {
             currentChannel.startTime = new Date()
         }
@@ -147,7 +147,7 @@ channels.forEach((channel, index) => {
             clients[senderIp] = []
             senderIpCleintStreamMap[senderIp] = {
                 isBuffering: true,  // boolean to store is streaming
-                bufferDelay: channel.bufferDelay, //in sec
+                bufferDelay: channel.bufferDelay || 10, //in sec
                 pcaketBuffer: [], //used to store the incoming the onesecondpacketbuffer array
                 oneSecondPacketBuffer: [], // used to store 1 second buffer packets
                 startTime: null, // start time of storing the buffer packet

@@ -149,7 +149,7 @@ channels.forEach((channel, index) => {
             senderIpCleintStreamMap[senderIp] = {
                 clientStream: new PassThrough(), // store the client stream
                 isBuffering: true,  // boolean to store is streaming
-                bufferDelay: channel.bufferDelay, //in sec
+                bufferDelay: channel.bufferDelay || 10, //in sec
                 pcaketBuffer: [], //used to store the incoming the onesecondpacketbuffer array
                 oneSecondPacketBuffer: [], // used to store 1 second buffer packets
                 startTime: null, // start time of storing the buffer packet
@@ -168,7 +168,7 @@ channels.forEach((channel, index) => {
     });
 });
 
-const udpSocket = dgram.createSocket({ 'type': 'udp4', reuseAddr: true, reusePort: true })
+const udpSocket = dgram.createSocket({ 'type': 'udp4', reuseAddr: true })
 
 udpSocket.bind(5001, () => {
     channels.forEach(channel => {

@@ -129,6 +129,7 @@ const CreateIp = async (ipaddress) => {
 const PORT = process.env.PORT || 4001;
 const networkId = '10.85.0.'
 const startHostId = 10
+const restart_threshold = 100 // max heap memory to reach to restart the server in mb
 
 /**
  * @typedef {Object} ChannelData
@@ -196,7 +197,7 @@ const startServer = () => {
         const heapUsedMB = heapStats.used_heap_size / 1024 / 1024;
         
         // Restart if memory exceeds 400MB
-        restartOnCondition(heapUsedMB > 100, `Memory usage: ${heapUsedMB.toFixed(2)}MB`);
+        restartOnCondition(heapUsedMB > restart_threshold, `Memory usage: ${heapUsedMB.toFixed(2)}MB`);
 
     }, 10000);
 
