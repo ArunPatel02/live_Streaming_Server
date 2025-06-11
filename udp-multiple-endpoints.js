@@ -6,6 +6,54 @@ const { spawn } = require('child_process');
 const ChannelData = require('./channels.json')
 const v8 = require('v8');
 
+// console.log("process.env " , process.env.NODE_ENV)
+// console.log("process.env " , process.env.PORT)
+
+
+//restart in error occurs in this code
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+    // PM2 will restart the process automatically
+    process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    // PM2 will restart the process automatically
+    process.exit(1);
+});
+
+// Custom restart function for specific conditions
+function restartOnCondition(condition, message) {
+    if (condition) {
+        console.log(`Restart triggered: ${message}`);
+        process.exit(1); // PM2 will restart
+    }
+}
+
+const app = express();
+
+// Global error handler (put this at the end)
+app.use((err, req, res, next) => {
+    console.error('Express Error:', err.stack);
+    res.status(500).send('Something broke!');
+
+    // For critical errors, restart the server
+    if (err.critical) {
+        console.log('Critical error detected, restarting server...');
+        process.exit(1);
+    }
+});
+
+// Graceful shutdown handler
+process.on('SIGTERM', () => {
+    console.log('SIGTERM received, shutting down gracefully');
+    server.close(() => {
+        console.log('Process terminated');
+    });
+});
+
+
 function formatBytes(bytes, decimals = 2) {
     if (bytes === 0) return '0 Bytes';
 
@@ -78,7 +126,7 @@ const CreateIp = async (ipaddress) => {
     })
 }
 
-const PORT = 4001;
+const PORT = process.env.PORT || 4001;
 const networkId = '10.85.0.'
 const startHostId = 10
 
@@ -145,10 +193,13 @@ const startServer = () => {
         console.log('Used Heap Size:', formatBytes(heapStats.used_heap_size));
         console.log('Heap Size Limit:', formatBytes(heapStats.heap_size_limit));
         console.log('---------------------------------');
-        console.log('flushing the whole memory');
+        const heapUsedMB = heapStats.used_heap_size / 1024 / 1024;
+        
+        // Restart if memory exceeds 400MB
+        restartOnCondition(heapUsedMB > 100, `Memory usage: ${heapUsedMB.toFixed(2)}MB`);
+
     }, 10000);
 
-    const app = express()
     channels.forEach((channel, index) => {
         const filter = `udp and dst host ${channel.multicastAddress} and dst port ${channel.port}`;
         const args = ['-i', 'enp86s0', filter, '-n', '-c', '1'];
@@ -186,7 +237,7 @@ const startServer = () => {
             // const clientStream = senderIpCleintStreamMap[channel.senderIp]
             // clientStream.pipe(res)
             const clientData = {
-                res, id: totalClents 
+                res, id: totalClents
             }
             clients[channel.senderIp]?.push(clientData)
             totalClents++;
