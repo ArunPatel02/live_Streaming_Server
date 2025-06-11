@@ -4,6 +4,20 @@ const http = require("http");
 const { PassThrough } = require("stream");
 const { spawn } = require('child_process');
 const ChannelData = require('./channels.json')
+const v8 = require('v8');
+
+function formatBytes(bytes, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
 
 const interfaceName = 'enp86s0';
 
@@ -86,6 +100,8 @@ const senderIpCleintStreamMap = {
 
 }
 
+const clients = {}
+
 //capture sender ip
 const captureSenderIp = (line) => {
     const match = line.match(/\b(\d{1,3}(?:\.\d{1,3}){3}\.\d+)\b/);
@@ -115,8 +131,22 @@ const startServer = () => {
     })
 
     udpSocket.on('message', (msg, rinfo) => {
-        senderIpCleintStreamMap[`${rinfo.address}.${rinfo.port}`]?.write(msg)
+        // senderIpCleintStreamMap[`${rinfo.address}.${rinfo.port}`]?.write(msg)
+        clients[`${rinfo.address}.${rinfo.port}`]?.forEach(({ res }) => {
+            res?.write(msg)
+        });
     })
+
+    setInterval(() => {
+        const heapStats = v8.getHeapStatistics();
+
+        console.log('\n--- Formatted Heap Statistics ---');
+        console.log('Total Heap Size:', formatBytes(heapStats.total_available_size));
+        console.log('Used Heap Size:', formatBytes(heapStats.used_heap_size));
+        console.log('Heap Size Limit:', formatBytes(heapStats.heap_size_limit));
+        console.log('---------------------------------');
+        console.log('flushing the whole memory');
+    }, 10000);
 
     const app = express()
     channels.forEach((channel, index) => {
@@ -134,7 +164,8 @@ const startServer = () => {
             const senderIp = captureSenderIp(output)
             if (senderIp && !channels[index].senderIp) {
                 channels[index].senderIp = senderIp;
-                senderIpCleintStreamMap[senderIp] = new PassThrough()
+                // senderIpCleintStreamMap[senderIp] = new PassThrough()
+                clients[senderIp] = []
             }
             tcpdump.kill('SIGINT'); // Ensure it ends even if -c fails
         });
@@ -147,26 +178,40 @@ const startServer = () => {
             // console.log(`tcpdump [${index + 1}] exited with code ${code}`);
         });
 
-
-        
-
-        app.get(`/stream${index+1}.ts`, (req, res) => {
+        let totalClents = 0
+        app.get(`/stream${index + 1}.ts`, (req, res) => {
             res.setHeader("Content-Type", "video/MP2T");
             console.log('client connected', channel.name);
-            const bufferStream = new PassThrough()
-            const clientStream = senderIpCleintStreamMap[channel.senderIp]
-            bufferStream.pipe(clientStream).pipe(res)
+            // const bufferStream = new PassThrough()
+            // const clientStream = senderIpCleintStreamMap[channel.senderIp]
+            // clientStream.pipe(res)
+            const clientData = {
+                res, id: totalClents 
+            }
+            clients[channel.senderIp]?.push(clientData)
+            totalClents++;
+
+            req.on('close', () => {
+                console.log('cleint close for ', clientData.id)
+                totalClents--;
+                // Remove client from list
+                const index = clients[channel.senderIp]?.indexOf(clientData);
+                console.log(index)
+                if (index !== -1) clients[channel.senderIp].splice(index, 1);
+
+            })
+            // bufferStream.pipe(clientStream).pipe(res)
 
         })
 
-        app.get(`/home${index+1}`, (req, res) => {
-            res.send(`server is listinign - ${channel.name} --> ${channel.multicastAddress} ---> http://10.0.80.2:${PORT}/stream${index+1}.ts`)
+        app.get(`/home${index + 1}`, (req, res) => {
+            res.send(`server is listinign - ${channel.name} --> ${channel.multicastAddress} ---> http://10.0.80.2:${PORT}/stream${index + 1}.ts`)
         })
 
 
     })
     http.createServer(app).listen(PORT, "0.0.0.0", () => {
-        console.log("server is listining - ", "all" , "--->", `http://${"channel.ipaddress"}:${PORT}`)
+        console.log("server is listining - ", "all", "--->", `http://${"channel.ipaddress"}:${PORT}`)
     })
 }
 

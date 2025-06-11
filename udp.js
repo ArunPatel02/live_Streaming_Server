@@ -12,10 +12,10 @@ const udpMulticastAddress = "239.100.100.20"; //TNT: 20 ESPN: 45
 app.get("/stream.ts", (req, res) => {
   console.log("Client connected for raw UDP TS stream");
 
-  res.setHeader("Content-Type", "video/MP2T");
+  res.setHeader("Content-Type", "video/MP2T"); //this will tell the client the res data will be of video/mp2t type
 //   res.setHeader("Cache-Control", "no-cache");
 
-  const udpSocket = dgram.createSocket({ type: "udp4", reuseAddr: true });
+  const udpSocket = dgram.createSocket({ type: "udp4", reuseAddr: true }); // used to create udpsocket
 
   udpSocket.on("error", (err) => {
     console.error("UDP socket error:", err);

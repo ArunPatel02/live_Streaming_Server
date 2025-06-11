@@ -1,4 +1,5 @@
 const express = require("express");
+const {response} = require('express')
 const dgram = require("dgram");
 const http = require("http");
 const { PassThrough } = require("stream");
@@ -82,9 +83,11 @@ const startHostId = 10
 /** @type {Array<ChannelData>} */
 const channels = ChannelData
 
-const senderIpCleintStreamMap = {
+/** @type {Record<string , PassThrough>} */
+const senderIpCleintStreamMap = {}
 
-}
+/** @type {Record<string , Array<{res : response , id : number}>>} */
+const clients = {}
 
 //capture sender ip
 const captureSenderIp = (line) => {
@@ -115,7 +118,10 @@ const startServer = () => {
     })
 
     udpSocket.on('message', (msg, rinfo) => {
-        senderIpCleintStreamMap[`${rinfo.address}.${rinfo.port}`]?.write(msg)
+        // senderIpCleintStreamMap[`${rinfo.address}.${rinfo.port}`]?.write(msg)
+        clients[`${rinfo.address}.${rinfo.port}`]?.forEach(({res})=>{
+            res?.write(msg)
+        })
     })
 
     channels.forEach((channel, index) => {
@@ -132,7 +138,8 @@ const startServer = () => {
             const senderIp = captureSenderIp(output)
             if (senderIp && !channels[index].senderIp) {
                 channels[index].senderIp = senderIp;
-                senderIpCleintStreamMap[senderIp] = new PassThrough()
+                // senderIpCleintStreamMap[senderIp] = new PassThrough()
+                clients[senderIp] = []
             }
             tcpdump.kill('SIGINT'); // Ensure it ends even if -c fails
         });
@@ -148,12 +155,29 @@ const startServer = () => {
 
         const app = express()
 
+        let totalClents = 0
         app.get('/stream.ts', (req, res) => {
             res.setHeader("Content-Type", "video/MP2T");
             console.log('client connected', channel.name);
-            const bufferStream = new PassThrough()
-            const clientStream = senderIpCleintStreamMap[channel.senderIp]
-            bufferStream.pipe(clientStream).pipe(res)
+            // const bufferStream = new PassThrough()
+            // const clientStream = senderIpCleintStreamMap[channel.senderIp]
+            // bufferStream.pipe(clientStream).pipe(res)
+
+            const clientData = {
+                res, id: totalClents 
+            }
+            clients[channel.senderIp]?.push(clientData)
+            totalClents++;
+
+            req.on('close', () => {
+                console.log('cleint close for ', clientData.id)
+                totalClents--;
+                // Remove client from list
+                const index = clients[channel.senderIp]?.indexOf(clientData);
+                console.log(index)
+                if (index !== -1) clients[channel.senderIp].splice(index, 1);
+
+            })
 
         })
 

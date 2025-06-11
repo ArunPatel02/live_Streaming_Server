@@ -81,15 +81,15 @@ const channels = [
         "senderIp": null,
         "bufferDelay": 10 
     },
-    // {
-    //     "id": "6784a66cc2b224fb1ab3c6c4",
-    //     "name": "NAT GEO",
-    //     "multicastAddress": "239.100.100.18",
-    //     "port": 5001,
-    //     "ipaddress": "10.85.0.18",
-    //     "senderIp": null,
-    //     "bufferDelay": 10 
-    // },
+    {
+        "id": "6784a66cc2b224fb1ab3c6c4",
+        "name": "NAT GEO",
+        "multicastAddress": "239.100.100.18",
+        "port": 5001,
+        "ipaddress": "10.85.0.18",
+        "senderIp": null,
+        "bufferDelay": 10 
+    },
     {
         "id": "6784a66cc2b224fb1ab3c6c5",
         "name": "TBS",
