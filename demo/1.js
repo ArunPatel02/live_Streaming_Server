@@ -6,7 +6,7 @@ const app = express();
 const port = 4001;
 
 const udpPort = 5001;
-const udpMulticastAddress = "239.100.100.19";
+const udpMulticastAddress = "239.100.100.45";
 
 const udpSocket = dgram.createSocket({ type: "udp4", reuseAddr: true });
 
@@ -29,13 +29,13 @@ udpSocket.on("message", (msg) => {
   }
   const oneSecondDiff = secondTime - firstTime;
   if (oneSecondDiff >= 1000) {
-    // console.log(
-    //   "Received UDP message:",
-    //   diff,
-    //   isBuffering,
-    //   oneSecondArray.length,
-    //   packageBuffer.length
-    // );
+    console.log(
+      "Received UDP message:",
+      diff,
+      isBuffering,
+      oneSecondArray.length,
+      packageBuffer.length
+    );
     packageBuffer.push(oneSecondArray);
     oneSecondArray = [];
     firstTime = null;
@@ -112,6 +112,6 @@ app.get("/stream.ts", async (req, res) => {
 // });
 
   // Start HTTP server on specific IP
-   http.createServer(app).listen(port, "172.32.215.34", () => {
+   http.createServer(app).listen(port, "0.0.0.0", () => {
     console.log(`HTTP streaming for ${"channel.id"} at http://${"172.32.215.34"}:${port}/stream.ts`);
   });

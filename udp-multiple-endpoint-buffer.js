@@ -92,17 +92,22 @@ udpSocket.on('message', (msg, rinfo) => {
 })
 
 setInterval(() => {
+    console.log("interval is running" , channels.length)
     channels.map(channel => {
+        console.log(channel.senderIp)
         if (channel.senderIp) {
             const currentChannel = senderIpCleintStreamMap[channel.senderIp]
             if (!currentChannel.isBuffering) {
-                const buffer = currentChannel.pcaketBuffer[0]
-                buffer?.map((chunk) => {
-                    // currentChannel.clientStream.write(chunk)
-                    clients[channel.senderIp]?.forEach(({ res }) => {
-                        res?.write(msg)
-                    });
-                })
+                if(clients[channel.senderIp]?.length){
+                    const buffer = currentChannel.pcaketBuffer[0]
+                    console.log(channel.senderIp , buffer.length)
+                    buffer?.map((chunk) => {
+                        // currentChannel.clientStream.write(chunk)
+                        clients[channel.senderIp]?.forEach(({ res }) => {
+                            res?.write(chunk)
+                        });
+                    })
+                }
                 currentChannel.pcaketBuffer.shift()
             }
         }
@@ -166,9 +171,9 @@ channels.forEach((channel, index) => {
     });
 
     let totalClents = 0
-    app.get(`/stream${index + 1}.ts`, (req, res) => {
+    app.get(`/stream/${index + 1}.ts`, (req, res) => {
         res.setHeader("Content-Type", "video/MP2T");
-        console.log('client connected', channel.name);
+        console.log('client connected', channel.name , channel.senderIp);
         const clientData = {
             res, id: totalClents
         }

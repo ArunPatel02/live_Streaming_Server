@@ -3,8 +3,9 @@ const dgram = require("dgram");
 const http = require("http");
 const { PassThrough } = require("stream");
 const { spawn } = require('child_process');
-const ChannelData = require('./channels.json')
+const ChannelData = require('../channels.json')
 const v8 = require('v8');
+const Table = require('cli-table3')
 
 // console.log("process.env " , process.env.NODE_ENV)
 // console.log("process.env " , process.env.PORT)
@@ -70,7 +71,7 @@ function formatBytes(bytes, decimals = 2) {
 const PORT = process.env.PORT || 4001;
 const restart_threshold = 1024 // max heap memory to reach to restart the server in mb
 const start = process.env.start || 0;
-const end = process.env.end || 60;
+const end = process.env.end || 35;
 
 console.log({start , end})
 
@@ -93,6 +94,26 @@ const senderIpCleintStreamMap = {
 }
 
 const clients = {}
+const speed = {}
+
+// setInterval(() => {
+//     console.clear()
+//     const table = new Table({
+//         head: ['index' , 'Channel Name', 'Multicast Address', 'Multicast Port' , 'sender Ip' , 'Stream Url' , 'Status' , 'Total Client' , 'Speed (mbps / kbps)']
+//     });
+//     channels.forEach((channel , index) => {
+//         const { name, multicastAddress, port, senderIp } = channel;
+//         const streamUrl = `/stream/${index+1}.ts`;
+//         const totalClient = (clients[channel.senderIp] || []).length
+//         const totalBytes = speed[channel.senderIp] || 0
+//         const bitsPerSecond = totalBytes * 8;
+//         const channelSpeed = (bitsPerSecond / 1_000_000).toFixed(3);
+//         const status = totalBytes ? 'Active' : 'In-Active';
+//         table.push(index+1 , [name, multicastAddress, port, senderIp, streamUrl, status, totalClient, `${channelSpeed} mbps`]);
+//         speed[channel.senderIp] = 0
+//     });
+//     console.log(table.toString())
+// }, 1000);
 
 //capture sender ip
 const captureSenderIp = (line) => {
@@ -113,7 +134,7 @@ const tcpdumpPath = '/usr/bin/tcpdump'; // confirm with `which tcpdump`
 //start the server
 const startServer = () => {
 
-    const udpSocket = dgram.createSocket({ 'type': 'udp4', reuseAddr: true, reusePort: true })
+    const udpSocket = dgram.createSocket({ 'type': 'udp4', reuseAddr: true })
     udpSocket.bind(5001, () => {
         channels.forEach(channel => {
             udpSocket.addMembership(channel.multicastAddress)
@@ -122,6 +143,7 @@ const startServer = () => {
     })
 
     udpSocket.on('message', (msg, rinfo) => {
+        speed[`${rinfo.address}.${rinfo.port}`] = (speed[`${rinfo.address}.${rinfo.port}`] || 0) + msg.length
         // senderIpCleintStreamMap[`${rinfo.address}.${rinfo.port}`]?.write(msg)
         clients[`${rinfo.address}.${rinfo.port}`]?.forEach(({ res }) => {
             res?.write(msg)
@@ -158,6 +180,7 @@ const startServer = () => {
             const senderIp = captureSenderIp(output)
             if (senderIp && !channels[index].senderIp) {
                 channels[index].senderIp = senderIp;
+                speed[senderIp] = 0;
                 // senderIpCleintStreamMap[senderIp] = new PassThrough()
                 clients[senderIp] = []
             }
@@ -174,7 +197,13 @@ const startServer = () => {
 
         let totalClents = 0
         app.get(`/stream/${index + Number(start) + 1}.ts`, (req, res) => {
-            res.setHeader("Content-Type", "video/MP2T");
+            // res.setHeader("Content-Type", "video/MP2T");
+            res.writeHead(200, {
+                "Content-Type": "video/MP2T",
+                "Transfer-Encoding": "chunked",
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+              });
             console.log('client connected', channel.name);
             // const bufferStream = new PassThrough()
             // const clientStream = senderIpCleintStreamMap[channel.senderIp]
@@ -204,6 +233,65 @@ const startServer = () => {
 
 
     })
+
+
+    app.get("/monitor", (req, res) => {
+        const rows = channels.map((channel, index) => {
+            const { name, multicastAddress, port, senderIp } = channel;
+            const streamUrl = `/stream/${index+1}.ts`;
+            const totalClient = (clients[channel.senderIp] || []).length
+            const totalBytes = speed[channel.senderIp] || 0
+            const bitsPerSecond = totalBytes * 8;
+            const channelSpeed = (bitsPerSecond / 3_000_000).toFixed(3);
+            const status = totalBytes ? 'Active' : 'In-Active';
+            speed[channel.senderIp] = 0
+          return `
+            <tr>
+              <td>${index + 1}</td>
+              <td>${name}</td>
+              <td>${multicastAddress}</td>
+              <td>${port}</td>
+              <td>${senderIp}</td>
+              <td>${status}</td>
+              <td>${channelSpeed} mbps</td>
+              <td>${totalClient}</td>
+            </tr>`;
+        }).join("");
+      
+        res.send(`
+          <html>
+            <head>
+              <title>Channel Dashboard</title>
+              <style>
+                body { font-family: sans-serif; padding: 20px; }
+                table { border-collapse: collapse; width: 100%; }
+                th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+                th { background: #333; color: white; }
+              </style>
+            <meta http-equiv="refresh" content="3">
+            </head>
+            <body>
+              <h1>Live Channel Monitor</h1>
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Channel</th>
+                    <th>Multicast</th>
+                    <th>Port</th>
+                    <th>Sender IP</th>
+                    <th>Status</th>
+                    <th>Speed</th>
+                    <th>Clients</th>
+                  </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </body>
+          </html>
+        `);
+      });
+
     http.createServer(app).listen(PORT, "0.0.0.0", () => {
         console.log("server is listining - ", "all", "--->", `http://localhost:${PORT}`)
     })
